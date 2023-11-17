@@ -1,9 +1,16 @@
+
 let checkpos = document.getElementsByTagName("main")
 let domandacorrente = 1
 let creadivpagina3 = document.createElement("div")
 creadivpagina3.classList = "classedivpg3"
 let numerodomande=10//aggiungere variabile presa da input
 let difficulty="easy"//aggiungere variabile presa da input
+let rating=0
+
+
+let arrayDati = [];
+
+
 
 
 const questions = [
@@ -111,8 +118,6 @@ let timeout
 function PickRandomQuestion(ListaDomande,num) { //,Numerodomande,Difficoulty quando farà gli extra
   let i2 = 0
   checkpos[0].style = "margin-top:150px"
-  
-
   i2 = Math.floor(Math.random() * ListaDomande.length)
   if (document.getElementById("progress-container2")) {
     document.getElementById("progress-container2").remove()
@@ -123,12 +128,12 @@ function PickRandomQuestion(ListaDomande,num) { //,Numerodomande,Difficoulty qua
 
   if (ListaDomande != 0) {
     creaTimer()
-    document.getElementById("main").innerHTML = ""
+    checkpos[0].innerHTML = ""
     CreaBottone(ListaDomande[i2])
     clearTimeout(timeout)
     timeout = setTimeout(function () {
 
-      PickRandomQuestion(questions,numerodomande)
+      PickRandomQuestion(arrayDati,numerodomande)
 
     }, 20000)
 
@@ -139,8 +144,8 @@ function PickRandomQuestion(ListaDomande,num) { //,Numerodomande,Difficoulty qua
     clearTimeout(timeout)
     
     //creare classe css per il risultato
-    document.getElementById("main").innerHTML=""
-    document.getElementById("main").style="margin-top:50px"
+    checkpos[0].innerHTML=""
+    checkpos[0].style="margin-top:50px"
     let creabottonefooter=document.createElement("input")
     let footerpos=document.getElementsByTagName("footer")
     creabottonefooter.type="button"
@@ -284,7 +289,6 @@ function creaTimer() {
 }
 function CreaBottone(domanda) {
   
-  let checkpos = document.getElementById("main")
   let creaform = document.createElement("form")
   let creadiv = document.createElement("div")
   let createsto = document.createElement("h2")
@@ -294,39 +298,44 @@ function CreaBottone(domanda) {
   creaquestion.classList = "labelquestion"
   creaquestion.innerHTML = `QUESTION ` + domandacorrente + `<span style="color:#d20094">/`+numerodomande+`</span>`
   createsto.innerHTML = domanda.question
-  checkpos.appendChild(creadiv)
+  checkpos[0].appendChild(creadiv)
   creadiv.appendChild(createsto)
   let divrisposte = document.createElement("div")
   divrisposte.classList = "divrisposte"
   creadiv.appendChild(divrisposte)
-  creapulsante.innerText = domanda.correct_answer
 
-  creapulsante.classList = "buttonrisposte"
-  divrisposte.appendChild(creapulsante)
+  domanda.incorrect_answers.push(domanda.correct_answer)
 
-  creapulsante.addEventListener("click", function () {
-    contatore++
-
-    PickRandomQuestion(questions,numerodomande)
-
-
-  })
-
+  for (let i = domanda.incorrect_answers.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [domanda.incorrect_answers[i], domanda.incorrect_answers[j]] = [domanda.incorrect_answers[j], domanda.incorrect_answers[i]];
+  }
   for (let i2 = 0; i2 < domanda.incorrect_answers.length; i2++)//parto dal numero massimo di risposte e ciclo finchè non arrivo a zero
   {
     creapulsante = document.createElement("button")
     creapulsante.innerText = domanda.incorrect_answers[i2]
-
     creapulsante.classList = "buttonrisposte"
     divrisposte.appendChild(creapulsante)
-    creadiv.append(creaquestion)
+    creadiv.appendChild(creaquestion)
+    if (domanda.incorrect_answers[i2]==domanda.correct_answer)
+    {
+      creapulsante.id="bottoneverde"
+      creapulsante.addEventListener("click", function () {
+      contatore++
+  
+      PickRandomQuestion(arrayDati,numerodomande)
+      })
+    }
+    else{
+      creapulsante.id="bottonerosso"
+      creapulsante.addEventListener("click", function () {
 
-    creapulsante.addEventListener("click", function () {
-
-      PickRandomQuestion(questions,numerodomande)
+      PickRandomQuestion(arrayDati,numerodomande)
     })
+    }
   }
   domandacorrente++
+
 }
 function CreaRisultato(percent) {
   let stringarisultato=""
@@ -402,7 +411,8 @@ function PrimaPagina() {
     if (trovacheckbox.checked) {
 
       checkpos[0].innerHTML = ""
-      PickRandomQuestion(questions,numerodomande)
+      selectDif()
+      
     }
     else {
 
@@ -424,8 +434,10 @@ function rimuovihover() {
     trovabottone.removeAttribute("onmousemove")
     trovabottone.removeAttribute("onmouseover")
     trovabottone.removeAttribute("onmousemout")
+    trovabottone.removeAttribute("style")
   }
   else {
+    trovabottone.style.cursor="not-allowed"
     trovabottone.setAttribute("onmousemove", "aggiornaPosizioneTextbox(event)")
     trovabottone.setAttribute("onmouseover", "mostraTextbox()")
     trovabottone.setAttribute("onmouseout", "nascondiTextbox()")
@@ -435,11 +447,13 @@ rimuovihover()
 function mostraTextbox() {
   var textbox = document.getElementById("hoverTextbox");
   textbox.style.display = "block";
+  
 }
 
 function nascondiTextbox() {
   var textbox = document.getElementById("hoverTextbox");
   textbox.style.display = "none";
+
 }
 
 function aggiornaPosizioneTextbox(event) {
@@ -453,7 +467,8 @@ function aggiornaPosizioneTextbox(event) {
 function addFeedback(){
   checkpos[0].innerHTML=""
   checkpos[0].style="text-align: center;"
-  checkpos[0].classList.add="firstText"
+  checkpos[0].id="main2"
+  //checkpos[0].classList.add="firstText"
   let createbutton = document.createElement("input")
   createbutton.setAttribute("type", "button")
   createbutton.id = "bottone"
@@ -522,7 +537,7 @@ function addFeedback(){
     }
   }
   function funzioneclick(i) {     
-    var rating=i
+    rating=i
     console.log(rating) 
     for(let i2=10;i2>0;i2--){
       
@@ -536,25 +551,102 @@ function addFeedback(){
       document.querySelector(`svg[data-rating="`+i+`"]`).children[0].style.fill="#00FFFF";
     }
   }
-  
   checkpos[0].appendChild(createbutton)
-  createbutton.addEventListener("click",function(){
-    let valoretesto=creainput.value
-    console.log(valoretesto)
+  
+  let overlay = document.createElement("div");
+  overlay.id = "overlay";
+  document.body.appendChild(overlay);
+ 
+  createbutton.addEventListener("click",function modale(){
+    let creadivmodal=document.createElement("div")
+    creadivmodal.id="myModal"
+    creadivmodal.classList="modal"
+    if(rating==0||creainput.value=="")
+    {
+      creadivmodal.innerHTML=`
+ 
+      <div class="modal-content">
+      <span class="close">&times;</span>
+      <p style="color:black">Si prega di dare una valutazione al test</p>
+      </div>`
+    }
+    else{
+      creadivmodal.innerHTML=`
+ 
+    <div class="modal-content">
+    <span class="close">&times;</span>
+    <p style="color:black">Grazie per il feedback a `+rating+` stelle</p>
+    <p style="color:black">Testo feedback: `+ creainput.value +`</p>
+    </div>`
+    }
+    
+    checkpos[0].appendChild(creadivmodal)
+    let modal = document.getElementById("myModal");
+    let span = document.getElementsByClassName("close")[0]
+    modal.style.display = "block";
+    overlay.style.display = "block";
+
+    
+    span.addEventListener("click",function() {
+      modal.style.display = "none";
+    })
+    window.addEventListener("click",function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    })
+    
 
   })
-
+  
 
 }
 
+function selectDif(){
+  
+  let elementoTitolo = document.createElement("h1")
+  
+  checkpos[0].id="main3"
+  checkpos[0].appendChild(elementoTitolo)
+  elementoTitolo.textContent = "SELEZIONA DIFFICOLTA"
+  let contenitoreBottone = document.createElement("div")
+  checkpos[0].appendChild(contenitoreBottone)
+  contenitoreBottone.classList.add("bottoni")
+  let arrayBottoni = ["easy","medium","hard"]
+  for (let i = 0; i < arrayBottoni.length; i++) {
+    let button = document.createElement("button");
+    button.textContent = arrayBottoni[i]
+    contenitoreBottone.appendChild(button);
+    let arrayDiID = ["green","orange","red"]
+    button.addEventListener("click",async function(){
+      difficulty=arrayBottoni[i]
+      
+      arrayDati= await changeDiff(arrayBottoni[i],inputDiDomande.value)
+      
+      PickRandomQuestion(arrayDati,numerodomande)
+
+    })
+    
+    button.id = arrayDiID[i]
+  }
+  let elementoTitolo2 = document.createElement("h2")
+  checkpos[0].appendChild(elementoTitolo2)
+  elementoTitolo2.textContent = "SELEZIONA NUMERO DI DOMANDE"
+  let inputDiDomande = document.createElement("input")
+  inputDiDomande.type="number"
+  inputDiDomande.setAttribute("min","0")
+  
+  inputDiDomande.setAttribute("step","1")
+  checkpos[0].appendChild(inputDiDomande)
+  
+}
+//selectDif()
 
 
-
-
-
-
-
-
-
-
-
+async function changeDiff(diff,num){
+  numerodomande=num
+  const apiUrl=`https://opentdb.com/api.php?amount=`+num+`&category=18&difficulty=`+diff
+  const response = await fetch(apiUrl);
+  const data = await response.json();
+  return data.results
+}
